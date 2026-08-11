@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/model/category_model.dart';
 import 'package:myapp/service/category_data.dart';
+import 'package:myapp/service/pizza_data.dart';
+import 'package:myapp/model/pizza_model.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -11,12 +13,14 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   List<CategoryModel> categories = [];
+  List<PizzaModel> pizza = [];
   String selectedCategory = "0";
 
   @override
   void initState() {
     super.initState();
     categories = getCategories();
+    pizza = getPizza();
   }
 
   @override
@@ -74,7 +78,7 @@ class _HomeState extends State<Home> {
               ],
             ),
             SizedBox(height: 20.0),
-            Container(
+            SizedBox(
               height: 60,
               child: ListView.builder(
                 shrinkWrap: true,
@@ -95,8 +99,58 @@ class _HomeState extends State<Home> {
                 },
               ),
             ),
-          ],
+            // ✅ Wrap in Expanded so GridView can scroll inside the Column
+            Expanded(
+              child: GridView.builder(
+                padding: EdgeInsets.zero,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 10.0,
+                  crossAxisSpacing: 10.0,
+                  childAspectRatio: 0.6,
+                ),
+                itemCount: pizza.length,
+                itemBuilder: (context, index) {
+                  return FoodTile(
+                    image: pizza[index].image!,
+                    name: pizza[index].name!,
+                    price: pizza[index].price!.toString(),
+                  );
+                },
+              ),
+            ),
+          ], // end Column children
         ),
+      ),
+    );
+  }
+}
+
+// ✅ Proper StatelessWidget instead of a plain function
+class FoodTile extends StatelessWidget {
+  final String image, name, price;
+
+  const FoodTile({
+    super.key,
+    required this.image,
+    required this.name,
+    required this.price,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Column(
+        children: [
+          Image.asset(
+            image,
+            height: 150,
+            width: 150,
+            fit: BoxFit.contain,
+          ),
+          Text(name),
+          Text("\$$price"),
+        ],
       ),
     );
   }
@@ -107,6 +161,7 @@ class CategoryTile extends StatelessWidget {
   final VoidCallback onTap;
 
   const CategoryTile({
+    super.key,
     required this.name,
     required this.image,
     required this.categoryindex,
